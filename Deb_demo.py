@@ -26,6 +26,7 @@ class Diller():
 		self.cards = []
 		self.trump = None
 		self.talon = None
+		self.obyaz = 0
 
 	def coloda(self, start):
 		"""Генерирует колоду карт для соответствующей игры"""
@@ -34,12 +35,21 @@ class Diller():
 				self.cards.append([i,j]) 
 
 	def dill_card(self, g_cards, number):
+		"""Раздает по одной случайной карте"""
 		for i in range(number):
 			g_cards.append(self.cards.pop(self.cards.index(choice(self.cards))))	
+	
+	def obyazon(self):
+		"""Следит за тем, чей сейчас обяз"""
+		if self.obyaz < 4:      #В дальнейшем можно передавать как параметр количество игроков
+			self.obyaz += 1     
+		else:
+			self.obyaz = 0
 
 	def deberc_dill(self, g1, g2, g3, g4, dop_dill = None):
 		"""Раздача карт в "Деберц" """
 		if dop_dill == None:
+			self.obyazon()
 			self.coloda(7)
 			self.dill_card(g1.m_cards, 6)
 			self.dill_card(g2.m_cards, 6)
@@ -65,4 +75,5 @@ d = Gamer()
 dill = Diller()
 dill.deberc_dill(a,b,c,d)
 dill.deberc_dill(a,b,c,d, dop_dill = 1)
-print (a.m_cards)
+
+print (dill.obyaz)
