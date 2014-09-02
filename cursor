@@ -1,0 +1,35 @@
+void cursor()
+{
+	char pole[80][100];
+	pole[0][0] = '|';
+	int i = 0, j = 0;
+	char curs;
+
+	do
+	{
+		curs = getchar();
+		switch(curs)
+		{
+		case 'd': j++; break;
+		case 'a': j--; break;
+		case 's': i++; break;
+		case 'w': i--; break;
+		}
+
+		if(i >= 0 && j >=0)
+		{
+			for (int k = 0; k < 80; k++)
+			{
+				for (int l = 0; l < 100; l++)
+				{
+					pole[k][l] = ' ';
+					if (k == i && l == j) pole[k][l] = '*';
+					cout << pole[k][l];
+				}
+				cout << "\n";
+			}
+		}
+
+	} while(curs != 'q');
+
+}
