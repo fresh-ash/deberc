@@ -33,3 +33,41 @@ void cursor()
 	} while(curs != 'q');
 
 }
+
+
+using namespace std;
+
+struct A
+{
+	int index;
+};
+
+struct List
+{
+	A a;
+	List* next;
+	List* prev;
+};
+
+
+
+int main() {
+	A a[5] = {1,2,3,4,5};
+	List *begin = NULL;
+	List *endR = begin;
+	begin->next = NULL;
+	begin = new List;
+	for (int i = 0; i < 5; i++)
+	{
+
+		begin->a = a[i];
+		begin->prev = begin->next;
+		begin->next = NULL;
+		endR->next = new List;
+		endR = endR->next;
+
+	}
+
+	cin.get();
+	return 0;
+}
