@@ -1,0 +1,101 @@
+#!usr/bin/python
+
+import sqlite3
+from bottle import run, route, template, debug, request, get, post, redirect, response, app
+
+from beaker.middleware import SessionMiddleware
+
+session_opts = {
+    'session.type': 'file',
+    'session.cookie_expires': 300,
+    'session.data_dir': '/home/ss',
+    'session.auto': True
+}
+app = SessionMiddleware(app(), session_opts)
+
+@route('/home')
+def home():
+	s = request.environ.get('beaker.session')
+	if 'login' in s and s['login'] == 1:
+		return template('users_start_page', user = s['user'], string = "You are logged!")
+	string = "Maybe you want to login or regester?!"
+	return template('users_start_page', user = "Anonymus", string = string)
+
+@route('/exit')
+def go_exit():
+	redirect('/home')
+
+@route('/exit', method = "POST")
+def exit():
+	s = request.environ.get('beaker.session')
+	s.delete()
+	redirect('/home')
+
+@route('/log')
+def go_home():
+	redirect('/home')
+	
+@route('/log', method = 'POST')
+def login():
+	
+	"""Login function"""
+	if request.POST.get('Enter','').strip():
+	#One way to retrieve data from the form
+		name = request.POST.get('name','').strip()     
+		password = request.POST.get('pass','').strip()
+	
+	#Connect to DataBase
+		conn = sqlite3.connect('mybase.db')        
+		c = conn.cursor() 
+		tab = c.execute("SELECT id, user, pass, admin, moder FROM users")
+	 
+		for s in tab:
+			if (name == s[1]) and (password == s[2]):
+			
+			#Successfully logged, updates the values in the database
+			#Useful, because in the future may need to track the number of users on the site
+				query = "UPDATE users SET login=1 WHERE id='%s'" % s[0]
+				c.execute(query)
+				conn.commit()
+			
+			#Session
+				session = request.environ.get('beaker.session')
+				session['id_user'] = s[0] 
+				session['user'] = s[1]
+				session['admin'] = s[3]
+				session['moder'] = s[4]
+				session['login'] = 1		
+				session.save()
+			
+			#If user has right 'root'
+				if s[3] == 1:
+					redirect('/start')
+
+		redirect('/home')
+	else:
+		redirect('/reg')	
+
+@route('/reg')
+def reg():
+	s = request.environ.get('beaker.session')
+	if 'login' in s and s['login'] == 1:
+		redirect('/home')
+	return template('users_register')
+
+
+
+@route('/start')
+def start_list():
+	s = request.environ.get('beaker.session')
+	if 'admin' in s:
+			if s['admin'] == 1:
+				conn = sqlite3.connect('mybase.db')
+				c = conn.cursor()
+				result = c.execute("SELECT id, user, comment FROM comments")
+				result = c.fetchall()
+				c.close()
+				return template('start', rows = result)
+	redirect('/home')
+
+debug(True)
+run(app=app)
